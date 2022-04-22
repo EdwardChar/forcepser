@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "./static/css/main.70cb9ba5.chunk.css",
+    "main.js": "./static/js/main.c8f0b69a.chunk.js",
+    "main.js.map": "./static/js/main.c8f0b69a.chunk.js.map",
+    "runtime-main.js": "./static/js/runtime-main.88f9dfb0.js",
+    "runtime-main.js.map": "./static/js/runtime-main.88f9dfb0.js.map",
+    "static/js/2.43ff36b8.chunk.js": "./static/js/2.43ff36b8.chunk.js",
+    "static/js/2.43ff36b8.chunk.js.map": "./static/js/2.43ff36b8.chunk.js.map",
+    "index.html": "./index.html",
+    "static/css/main.70cb9ba5.chunk.css.map": "./static/css/main.70cb9ba5.chunk.css.map",
+    "static/js/2.43ff36b8.chunk.js.LICENSE.txt": "./static/js/2.43ff36b8.chunk.js.LICENSE.txt",
+    "static/media/aitalk6_save.cfa1b734.png": "./static/media/aitalk6_save.cfa1b734.png",
+    "static/media/bouyomi_file.54211c30.png": "./static/media/bouyomi_file.54211c30.png",
+    "static/media/cevio_export.72e3f158.png": "./static/media/cevio_export.72e3f158.png",
+    "static/media/cevio_menu3.9b435b3e.png": "./static/media/cevio_menu3.9b435b3e.png",
+    "static/media/cevio_talk.3537a950.png": "./static/media/cevio_talk.3537a950.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.88f9dfb0.js",
+    "static/js/2.43ff36b8.chunk.js",
+    "static/css/main.70cb9ba5.chunk.css",
+    "static/js/main.c8f0b69a.chunk.js"
+  ]
+}
