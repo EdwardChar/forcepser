@@ -48,19 +48,19 @@ func luaExecute(path string, text string) lua.LGFunction {
 			cmds = append(cmds, replacer.Replace(L.ToString(i)))
 		}
 		if err := exec.Command(cmds[0], cmds[1:]...).Run(); err != nil {
-			L.RaiseError("外部コマンド実行に失敗しました: %v", err)
+			L.RaiseError("外部命令执行失败: %v", err)
 		}
 		f, err := os.Open(tempFile)
 		if err == nil {
 			defer f.Close()
 			f2, err := os.Create(path)
 			if err != nil {
-				L.RaiseError("ファイル %s が開けません: %v", path, err)
+				L.RaiseError("无法打开文件 %s : %v", path, err)
 			}
 			defer f2.Close()
 			_, err = io.Copy(f2, f)
 			if err != nil {
-				L.RaiseError("ファイルのコピー中にエラーが発生しました: %v", err)
+				L.RaiseError("复制文件时出错: %v", err)
 			}
 		}
 		return 0
@@ -79,17 +79,17 @@ func luaReplaceEnv(ss *setting) lua.LGFunction {
 func copyFile(dst, src string) error {
 	sf, err := os.Open(src)
 	if err != nil {
-		return fmt.Errorf("コピー元ファイル %s を開けません: %w", src, err)
+		return fmt.Errorf("无法打开复制源文件 %s : %w", src, err)
 	}
 	defer sf.Close()
 	df, err := os.Create(dst)
 	if err != nil {
-		return fmt.Errorf("コピー先ファイル %s を開けません: %w", dst, err)
+		return fmt.Errorf("无法打开复制目标文件 %s : %w", dst, err)
 	}
 	defer df.Close()
 	_, err = io.Copy(df, sf)
 	if err != nil {
-		return fmt.Errorf("ファイルコピー %s -> %s に失敗しました: %w", src, dst, err)
+		return fmt.Errorf("文件复制 %s -> %s 失败: %w", src, dst, err)
 	}
 	return nil
 }
@@ -128,12 +128,12 @@ func retry(f func() error, max int) error {
 			return nil
 		}
 		if verbose {
-			log.Println(suppress.Sprintf("%d回目の試行に失敗: %v", i+1, err))
+			log.Println(suppress.Sprintf("%d次尝试失败: %v", i+1, err))
 		}
 		time.Sleep(300 * time.Millisecond)
 	}
 	if verbose {
-		log.Println(suppress.Renderln("リトライを諦めました"))
+		log.Println(suppress.Renderln("放弃重试"))
 	}
 	return err
 }
@@ -143,10 +143,10 @@ func delayRemove(files []string, delay float64) {
 	for _, f := range files {
 		err := retry(func() error { return os.Remove(f) }, 3)
 		if err != nil {
-			log.Println(warn.Sprintf("移動元のファイル %s の削除に失敗しました: %v", f, err))
+			log.Println(warn.Sprintf("移动源文件 %s 删除失败: %v", f, err))
 		}
 		if verbose {
-			log.Println(suppress.Renderln("ファイル削除:", f))
+			log.Println(suppress.Renderln("文件删除:", f))
 		}
 	}
 }
@@ -160,14 +160,14 @@ func findGoodFileName(candidate, dir string) (string, error) {
 	for i <= 100 {
 		if !exists(prefix + a + ext) {
 			if verbose {
-				log.Println(suppress.Renderln("名前変更案:", name+a+ext))
+				log.Println(suppress.Renderln("重命名方案:", name+a+ext))
 			}
 			return name + a + ext, nil
 		}
 		i++
 		a = fmt.Sprintf(" (%d)", i)
 	}
-	return candidate, fmt.Errorf("%s に似た名前のファイルが多すぎます", candidate)
+	return candidate, fmt.Errorf("名称与 %s 相似的文件太多", candidate)
 }
 
 func luaFindRule(ss *setting) lua.LGFunction {
@@ -175,7 +175,7 @@ func luaFindRule(ss *setting) lua.LGFunction {
 		path := L.ToString(1)
 		rule, text, err := ss.Find(path)
 		if err != nil {
-			L.RaiseError("マッチ条件の検索中にエラーが発生しました: %v", err)
+			L.RaiseError("搜索匹配条件时出错: %v", err)
 		}
 		if rule == nil {
 			return 0
@@ -184,13 +184,13 @@ func luaFindRule(ss *setting) lua.LGFunction {
 			textfile := changeExt(path, ".txt")
 			err = retry(func() error { return os.Remove(textfile) }, 3)
 			if err != nil {
-				L.RaiseError("%s が削除できません: %v", textfile, err)
+				L.RaiseError("%s 无法删除: %v", textfile, err)
 			}
-			log.Println("  deletetext の設定に従い txt を削除しました")
+			log.Println("  按照 deletetext 设定删除 txt")
 		}
 		files, err := enumMoveTargetFiles(path)
 		if err != nil {
-			L.RaiseError("ファイルの列挙に失敗しました: %v", err)
+			L.RaiseError("文件枚举失败: %v", err)
 		}
 		if rule.FileMove == "move" || rule.FileMove == "copy" {
 			destDir := rule.ExpandedDestDir()
@@ -198,20 +198,20 @@ func luaFindRule(ss *setting) lua.LGFunction {
 			if strings.Contains(rule.DestDir, "%PROJECTDIR%") && ss.projectDir == "" {
 				proj, err := readGCMZDropsData()
 				if err != nil || proj.GCMZAPIVer < 1 {
-					L.RaiseError("ごちゃまぜドロップス v0.3.13 以降を導入した AviUtl が見つかりません")
+					L.RaiseError("找不到装有‘随意拖放’ v0.3.13 或更高版本的 AviUtl")
 				}
 				if proj.Width == 0 {
-					L.RaiseError("`AviUtl で編集中のプロジェクトファイルが見つかりません")
+					L.RaiseError("`找不到AviUtl中正在编辑的工程文件")
 				}
-				L.RaiseError("AviUtl のプロジェクトファイルがまだ保存されていないため処理を続行できません")
+				L.RaiseError("AviUtl工程文件尚未保存，处理无法继续")
 			}
 			destfi, err := getFileInfo(destDir)
 			if err != nil {
-				L.RaiseError("%s先フォルダー %s の情報取得に失敗しました: %v", rule.FileMove.Readable(), destDir, err)
+				L.RaiseError("%s目标文件夹 %s 信息获取失败: %v", rule.FileMove.Readable(), destDir, err)
 			}
 			srcfi, err := getFileInfo(srcDir)
 			if err != nil {
-				L.RaiseError("%s元フォルダー %s の情報取得に失敗しました: %v", rule.FileMove.Readable(), srcDir, err)
+				L.RaiseError("%s源文件夹 %s 信息获取失败: %v", rule.FileMove.Readable(), srcDir, err)
 			}
 			if !isSameFileInfo(destfi, srcfi) {
 				deleteFiles := []string{}
@@ -220,10 +220,10 @@ func luaFindRule(ss *setting) lua.LGFunction {
 					newpath := filepath.Join(destDir, f)
 					err = retry(func() error { return copyFile(newpath, oldpath) }, 3)
 					if err != nil {
-						L.RaiseError("ファイルのコピーに失敗しました: %v", err)
+						L.RaiseError("文件复制失败: %v", err)
 					}
 					if verbose {
-						log.Println(suppress.Renderln("ファイルコピー", oldpath, "->", newpath))
+						log.Println(suppress.Renderln("文件复制", oldpath, "->", newpath))
 					}
 					if rule.FileMove == "move" {
 						deleteFiles = append(deleteFiles, oldpath)
@@ -234,7 +234,7 @@ func luaFindRule(ss *setting) lua.LGFunction {
 				} else {
 					delayRemove(deleteFiles, 0)
 				}
-				log.Printf("  filemove = \"%s\" の設定に従い、ファイルを以下の場所に%sしました\n", rule.FileMove, rule.FileMove.Readable())
+				log.Printf("  按照 filemove = \"%s\" 设定，将文件放到以下 %s 位置\n", rule.FileMove, rule.FileMove.Readable())
 				log.Println("    ", destDir)
 				path = filepath.Join(destDir, filepath.Base(path))
 			}
@@ -249,7 +249,7 @@ func luaFindRule(ss *setting) lua.LGFunction {
 			defer L2.Close()
 			L2.PreloadModule("re", gluare.Loader)
 			if err = L2.DoString(`re = require("re")`); err != nil {
-				L.RaiseError("modifier スクリプトの初期化中にエラーが発生しました: %v", err)
+				L.RaiseError("modifier脚本初始化时出错: %v", err)
 			}
 			L2.SetGlobal("debug_print", L2.NewFunction(luaDebugPrint))
 			L2.SetGlobal("debug_error", L2.NewFunction(luaDebugError))
@@ -267,7 +267,7 @@ func luaFindRule(ss *setting) lua.LGFunction {
 			L2.SetGlobal("exofile", exofile)
 			L2.SetGlobal("luafile", luafile)
 			if err = L2.DoString(rule.Modifier); err != nil {
-				L.RaiseError("modifier スクリプトの実行中にエラーが発生しました: %v", err)
+				L.RaiseError("运行modifier脚本时出错: %v", err)
 			}
 			layer = int(lua.LVAsNumber(L2.GetGlobal("layer")))
 			text = L2.GetGlobal("text").String()
@@ -280,17 +280,17 @@ func luaFindRule(ss *setting) lua.LGFunction {
 				dir := filepath.Dir(path)
 				newfilename, err = findGoodFileName(newfilename, dir)
 				if err != nil {
-					L.RaiseError("ファイル名の候補が見つかりません: %v", err)
+					L.RaiseError("找不到文件名候选: %v", err)
 				}
 				for _, f := range files {
 					oldpath := filepath.Join(dir, f)
 					newpath := filepath.Join(dir, changeExt(newfilename, filepath.Ext(f)))
 					err = retry(func() error { return os.Rename(oldpath, newpath) }, 3)
 					if err != nil {
-						L.RaiseError("ファイル名の変更に失敗しました: %v", err)
+						L.RaiseError("文件重命名失败: %v", err)
 					}
 					if verbose {
-						log.Println(suppress.Renderln("ファイル名変更:", oldpath, "->", newpath))
+						log.Println(suppress.Renderln("重命名:", oldpath, "->", newpath))
 					}
 				}
 				path = filepath.Join(dir, newfilename)
@@ -317,12 +317,12 @@ func luaFindRule(ss *setting) lua.LGFunction {
 func luaGetAudioInfo(L *lua.LState) int {
 	f, err := os.Open(L.ToString(1))
 	if err != nil {
-		L.RaiseError("ファイルが開けません: %v", err)
+		L.RaiseError("无法打开文件: %v", err)
 	}
 	defer f.Close()
 	r, wfe, err := wave.NewLimitedReader(f)
 	if err != nil {
-		L.RaiseError("Wave ファイルの読み取りに失敗しました: %v", err)
+		L.RaiseError("Wave文件读取失败: %v", err)
 	}
 	t := L.NewTable()
 	t.RawSetString("samplerate", lua.LNumber(wfe.Format.SamplesPerSec))
@@ -336,7 +336,7 @@ func luaGetAudioInfo(L *lua.LState) int {
 func luaFromSJIS(L *lua.LState) int {
 	s, err := japanese.ShiftJIS.NewDecoder().String(L.ToString(1))
 	if err != nil {
-		L.RaiseError("文字列を Shift_JIS から変換できません: %v", err)
+		L.RaiseError("无法从 Shift_JIS 转换为字符串: %v", err)
 	}
 	L.Push(lua.LString(s))
 	return 1
@@ -345,7 +345,7 @@ func luaFromSJIS(L *lua.LState) int {
 func luaToSJIS(L *lua.LState) int {
 	s, err := japanese.ShiftJIS.NewEncoder().String(L.ToString(1))
 	if err != nil {
-		L.RaiseError("文字列を Shift_JIS に変換できません: %v", err)
+		L.RaiseError("无法将字符串转换为 Shift_JIS: %v", err)
 	}
 	L.Push(lua.LString(s))
 	return 1

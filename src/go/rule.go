@@ -32,7 +32,7 @@ func (mt moveType) Readable() string {
 	case "move":
 		return "移動"
 	}
-	return fmt.Sprintf("無効な設定(%q)", string(mt))
+	return fmt.Sprintf("无效设定(%q)", string(mt))
 }
 
 type rule struct {
@@ -260,14 +260,14 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 
 	for i := range ss.Rule {
 		if verbose {
-			log.Println(suppress.Renderln(i, "番目のルールを検証中..."))
+			log.Println(suppress.Renderln(i, "条规则校验中..."))
 		}
 		r := &ss.Rule[i]
 		ruleDir := r.ExpandedDir()
 		ruledirFI, err := getFileInfo(ruleDir)
 		if err != nil {
 			if verbose {
-				log.Println(suppress.Renderln("  フォルダーの情報取得に失敗しました"))
+				log.Println(suppress.Renderln("  文件夹信息获取失败"))
 				log.Println(suppress.Renderln("    dir:", ruleDir))
 				log.Println(suppress.Renderln("    error:", err))
 			}
@@ -275,7 +275,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 		}
 		if !isSameFileInfo(dirFI, ruledirFI) {
 			if verbose {
-				log.Println(suppress.Renderln("  フォルダーが一致しません"))
+				log.Println(suppress.Renderln("  文件夹不匹配"))
 				log.Println(suppress.Renderln("    want:", r.ExpandedDir()))
 				log.Println(suppress.Renderln("    got:", dir))
 			}
@@ -283,7 +283,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 		}
 		if !r.fileRE.MatchString(base) {
 			if verbose {
-				log.Println(suppress.Renderln("  ファイル名がワイルドカードに一致しません"))
+				log.Println(suppress.Renderln("  文件名与通配符不匹配"))
 				log.Println(suppress.Renderln("    filename:", base))
 				log.Println(suppress.Renderln("    regex:", r.fileRE))
 			}
@@ -298,7 +298,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 				}
 				if !r.textRE.MatchString(*u8) {
 					if verbose {
-						log.Println(suppress.Renderln("    テキスト内容が正規表現にマッチしませんでした"))
+						log.Println(suppress.Renderln("    文本内容与正则表达式不匹配"))
 					}
 					continue
 				}
@@ -307,7 +307,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 					b, err := shiftjis.NewDecoder().Bytes(textRaw)
 					if err != nil {
 						if verbose {
-							log.Println(suppress.Renderln("    Shift_JIS から UTF-8 への文字コード変換に失敗しました"))
+							log.Println(suppress.Renderln("    Shift_JIS → UTF-8 字符编码转换失败"))
 							log.Println(suppress.Renderln("      ", err))
 						}
 						continue
@@ -317,7 +317,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 				}
 				if !r.textRE.MatchString(*sjis) {
 					if verbose {
-						log.Println(suppress.Renderln("    テキスト内容が正規表現にマッチしませんでした"))
+						log.Println(suppress.Renderln("    文本内容与正则表达式不匹配"))
 					}
 					continue
 				}
@@ -326,7 +326,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 					b, err := utf16le.NewDecoder().Bytes(textRaw)
 					if err != nil {
 						if verbose {
-							log.Println(suppress.Renderln("    UTF-16LE から UTF-8 への文字コード変換に失敗しました"))
+							log.Println(suppress.Renderln("    UTF-16LE → UTF-8 字符编码转换失败"))
 							log.Println(suppress.Renderln("      ", err))
 						}
 						continue
@@ -336,7 +336,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 				}
 				if !r.textRE.MatchString(*u16le) {
 					if verbose {
-						log.Println(suppress.Renderln("    テキスト内容が正規表現にマッチしませんでした"))
+						log.Println(suppress.Renderln("    文本内容与正则表达式不匹配"))
 					}
 					continue
 				}
@@ -345,7 +345,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 					b, err := utf16be.NewDecoder().Bytes(textRaw)
 					if err != nil {
 						if verbose {
-							log.Println(suppress.Renderln("    UTF-16BE から UTF-8 への文字コード変換に失敗しました"))
+							log.Println(suppress.Renderln("    UTF-16BE → UTF-8 字符编码转换失败"))
 							log.Println(suppress.Renderln("      ", err))
 						}
 						continue
@@ -355,14 +355,14 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 				}
 				if !r.textRE.MatchString(*u16be) {
 					if verbose {
-						log.Println(suppress.Renderln("    テキスト内容が正規表現にマッチしませんでした"))
+						log.Println(suppress.Renderln("    文本内容与正则表达式不匹配"))
 					}
 					continue
 				}
 			}
 		}
 		if verbose {
-			log.Println(suppress.Renderln("  このルールに適合しました"))
+			log.Println(suppress.Renderln("  符合此规则"))
 		}
 		switch r.Encoding {
 		case "utf8":

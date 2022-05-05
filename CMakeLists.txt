@@ -6,8 +6,8 @@ if ("${EXPORT_DIR}" STREQUAL "")
   set(EXPORT_DIR "bin" CACHE STRING "export directory" FORCE)
 endif()
 
-set(ASAS_VERSION "v0.2.5")
-set(ASAS_URL "https://github.com/oov/asas/releases/download/${ASAS_VERSION}/asas_${ASAS_VERSION}.zip")
+set(ASAS_VERSION "v0.0.1")
+set(ASAS_URL "https://github.com/EdwardChar/asas/releases/download/${ASAS_VERSION}/asas_${ASAS_VERSION}.zip")
 set(ASAS_DIR "${EXPORT_DIR}/asas")
 add_custom_target(extract_asas ALL COMMAND
   ${CMAKE_COMMAND}

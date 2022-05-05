@@ -85,31 +85,31 @@ func clearScreen() error {
 func verifyAndCalcHash(wavPath string, txtPath string) (string, error) {
 	txt, err := os.OpenFile(txtPath, os.O_RDWR, 0666)
 	if err != nil {
-		return "", fmt.Errorf("テキストファイルが開けませんでした: %w", err)
+		return "", fmt.Errorf("无法打开文本文件: %w", err)
 	}
 	defer txt.Close()
 	wav, err := os.OpenFile(wavPath, os.O_RDWR, 0666)
 	if err != nil {
-		return "", fmt.Errorf("waveファイルが開けませんでした: %w", err)
+		return "", fmt.Errorf("无法打开wav文件: %w", err)
 	}
 	defer wav.Close()
 	r, wfe, err := wave.NewLimitedReader(wav)
 	if err != nil {
-		return "", fmt.Errorf("waveファイルが読み取れませんでした: %w", err)
+		return "", fmt.Errorf("无法读取wav文件: %w", err)
 	}
 	if r.N == 0 || wfe.Format.SamplesPerSec == 0 || wfe.Format.Channels == 0 || wfe.Format.BitsPerSample == 0 {
-		return "", fmt.Errorf("waveファイルに記録されている値が不正です: %w", err)
+		return "", fmt.Errorf("wav文件保存值无效: %w", err)
 	}
 	if _, err := wav.Seek(0, io.SeekStart); err != nil {
-		return "", fmt.Errorf("waveファイルの読み取りカーソルを移動できませんでした: %w", err)
+		return "", fmt.Errorf("无法移动wav文件读取光标: %w", err)
 	}
 	h := fnv.New32a()
 	if _, err := io.Copy(h, wav); err != nil {
-		return "", fmt.Errorf("waveファイルが読み取れませんでした: %w", err)
+		return "", fmt.Errorf("无法读取wav文件: %w", err)
 	}
 	h2 := fnv.New32a()
 	if _, err := io.Copy(h2, txt); err != nil {
-		return "", fmt.Errorf("テキストファイルが読み取れませんでした: %w", err)
+		return "", fmt.Errorf("无法读取文本文件: %w", err)
 	}
 	return string(h2.Sum(h.Sum(nil))), nil
 }
@@ -119,7 +119,7 @@ func processFiles(L *lua.LState, files []file, sort string, recentChanged map[st
 	defer func() {
 		for k, ct := range recentChanged {
 			if ct.Retry == maxRetry-1 || ct.Stay == maxStay-1 {
-				log.Println(warn.Renderln("  たくさん失敗したのでこのファイルは諦めます:", k))
+				log.Println(warn.Renderln("  出错过多，暂时放弃此文件:", k))
 				delete(recentChanged, k)
 				continue
 			}
@@ -136,13 +136,13 @@ func processFiles(L *lua.LState, files []file, sort string, recentChanged map[st
 	proj, err := readGCMZDropsData()
 	if err != nil {
 		if verbose {
-			log.Println(suppress.Renderln("プロジェクト情報取得失敗:", err))
+			log.Println(suppress.Renderln("工程信息获取失败:", err))
 		}
-		err = fmt.Errorf("ごちゃまぜドロップス v0.3 以降がインストールされた AviUtl が検出できませんでした")
+		err = fmt.Errorf("找不到装有‘随意拖放’ v0.3.13 或更高版本的 AviUtl")
 		return
 	}
 	if proj.Width == 0 {
-		err = fmt.Errorf("AviUtl で編集中のプロジェクトが見つかりません")
+		err = fmt.Errorf("找不到AviUtl中正在编辑的工程文件")
 		return
 	}
 	t := L.NewTable()
@@ -176,7 +176,7 @@ func processFiles(L *lua.LState, files []file, sort string, recentChanged map[st
 	}
 	rv := L.ToTable(-1)
 	if rv == nil {
-		err = fmt.Errorf("処理後の戻り値が異常です")
+		err = fmt.Errorf("处理后返回值异常")
 		return
 	}
 	// remove processed entries
@@ -236,7 +236,7 @@ func watchProjectPath(ctx context.Context, notify chan<- map[string]struct{}, pr
 		case <-time.After(5 * time.Second):
 			if projectPath != getProjectPath() {
 				if verbose {
-					log.Println(suppress.Renderln("  AviUtl のプロジェクトパスの変更を検出しました"))
+					log.Println(suppress.Renderln("  检测到 AviUtl 工程路径更改"))
 				}
 				notify <- nil
 				return
@@ -257,25 +257,25 @@ func watch(ctx context.Context, watcher *fsnotify.Watcher, settingWatcher *fsnot
 			return
 		case event := <-watcher.Events:
 			if verbose {
-				log.Println(suppress.Renderln("イベント検証:", event))
+				log.Println(suppress.Renderln("事件校验:", event))
 			}
 			if event.Op&(fsnotify.Create|fsnotify.Write) == 0 {
 				if verbose {
-					log.Println(suppress.Renderln("  オペレーションが Create / Write ではないので何もしません"))
+					log.Println(suppress.Renderln("  操作非Create / Write，因此均不执行。"))
 				}
 				continue
 			}
 			ext := strings.ToLower(filepath.Ext(event.Name))
 			if ext != ".wav" && ext != ".txt" {
 				if verbose {
-					log.Println(suppress.Renderln("  *.wav / *.txt のどちらでもないので何もしません"))
+					log.Println(suppress.Renderln("  非*.wav / *.txt文件，因此均不执行。"))
 				}
 				continue
 			}
 			st, err := os.Stat(event.Name)
 			if err != nil {
 				if verbose {
-					log.Println(suppress.Renderln("  更新日時の取得に失敗したので何もしません"))
+					log.Println(suppress.Renderln("  更新日期获取失败，因此均不执。。"))
 				}
 				continue
 			}
@@ -285,7 +285,7 @@ func watch(ctx context.Context, watcher *fsnotify.Watcher, settingWatcher *fsnot
 				// See: https://github.com/oov/forcepser/issues/10
 				if time.Since(st.ModTime()) > writeNotificationDeadline {
 					if verbose {
-						log.Println(suppress.Renderln("  ファイル変更通知がありましたが更新日時が", writeNotificationDeadline, "以上前なので何もしません"))
+						log.Println(suppress.Renderln("  有文件更改通知，但更新时间早于", writeNotificationDeadline, "因此均不执行"))
 					}
 					continue
 				}
@@ -293,30 +293,30 @@ func watch(ctx context.Context, watcher *fsnotify.Watcher, settingWatcher *fsnot
 				if freshness > 0 {
 					if math.Abs(time.Since(st.ModTime()).Seconds()) > freshness {
 						if verbose {
-							log.Println(suppress.Renderln("  更新日時が", freshness, "秒以上前なので何もしません"))
+							log.Println(suppress.Renderln("  更新日期为一秒前", freshness, "因此均不执行"))
 						}
 						continue
 					}
 				}
 			}
 			if verbose {
-				log.Println(suppress.Renderln("  送信ファイル候補にします"))
+				log.Println(suppress.Renderln("  选定为传输文件候选"))
 			}
 			changed[event.Name[:len(event.Name)-len(ext)]+".wav"] = struct{}{}
 			timer.Reset(time.Duration(sortdelay) * time.Second)
 		case event := <-settingWatcher.Events:
 			if event.Name == settingFile {
 				if verbose {
-					log.Println(suppress.Renderln("  設定ファイルの再読み込みとして処理します"))
+					log.Println(suppress.Renderln("  处理为重新读取配置文件。"))
 				}
 				finish = true
 				timer.Reset(100 * time.Millisecond)
 				continue
 			}
 		case err := <-watcher.Errors:
-			log.Println(warn.Renderln("監視中にエラーが発生しました:", err))
+			log.Println(warn.Renderln("监视时发生错误:", err))
 		case err := <-settingWatcher.Errors:
-			log.Println(warn.Renderln("監視中にエラーが発生しました:", err))
+			log.Println(warn.Renderln("监视时发生错误:", err))
 		case <-timer.C:
 			if finish {
 				notify <- nil
@@ -336,16 +336,16 @@ func bool2str(b bool, t string, f string) string {
 }
 
 func printDetails(setting *setting, tempDir string) {
-	log.Println(caption.Renderln("AviUtl プロジェクト情報:"))
+	log.Println(caption.Renderln("AviUtl 工程信息:"))
 	proj, err := readGCMZDropsData()
 	if err != nil {
-		log.Println(warn.Renderln("  ごちゃまぜドロップス v0.3 以降がインストールされた AviUtl が見つかりません"))
+		log.Println(warn.Renderln("  找不到装有‘随意拖放’ v0.3.13 或更高版本的 AviUtl"))
 	} else {
 		if proj.Width == 0 {
-			log.Println(warn.Renderln("  AviUtl で編集中のプロジェクトが見つかりません"))
+			log.Println(warn.Renderln("  找不到AviUtl中正在编辑的工程文件"))
 		} else {
 			if proj.GCMZAPIVer < 1 {
-				log.Println(warn.Renderln("  ごちゃまぜドロップスのバージョンが古いため一部の機能が使用できません"))
+				log.Println(warn.Renderln("  随意拖放版本过旧，部分功能无法使用。"))
 			} else {
 				log.Println(suppress.Renderln("  ProjectFile:"), proj.ProjectFile)
 			}
@@ -363,7 +363,7 @@ func printDetails(setting *setting, tempDir string) {
 		}
 	}
 
-	log.Println(caption.Renderln("環境変数:"))
+	log.Println(caption.Renderln("环境变量:"))
 	log.Println(suppress.Renderln("  %BASEDIR%:   "), setting.BaseDir)
 	log.Println(suppress.Renderln("  %TEMPDIR%:   "), tempDir)
 	log.Println(suppress.Renderln("  %PROJECTDIR%:"), setting.projectDir)
@@ -378,37 +378,37 @@ func printDetails(setting *setting, tempDir string) {
 
 	for i, a := range setting.Asas {
 		log.Println(caption.Sprintf("Asas %d:", i+1))
-		log.Println(suppress.Renderln("  対象EXE:"), a.Exe)
-		log.Println(suppress.Renderln("  フィルター:"), a.Filter)
-		log.Println(suppress.Renderln("  保存先フォルダー:"), a.ExpandedFolder())
-		log.Println(suppress.Renderln("  フォーマット:"), a.Format)
-		log.Println(suppress.Renderln("  フラグ:"), a.Flags)
+		log.Println(suppress.Renderln("  目标EXE:"), a.Exe)
+		log.Println(suppress.Renderln("  滤镜:"), a.Filter)
+		log.Println(suppress.Renderln("  保存目录:"), a.ExpandedFolder())
+		log.Println(suppress.Renderln("  格式:"), a.Format)
+		log.Println(suppress.Renderln("  标记:"), a.Flags)
 		if !a.Exists() {
-			log.Println(warn.Renderln("  [警告] 対象EXE が見つからないため設定を無視します"))
+			log.Println(warn.Renderln("  [警告] 找不到目标EXE，因此忽略设定"))
 		}
 	}
 	log.Println()
 	for i, r := range setting.Rule {
-		log.Println(caption.Sprintf("ルール%d:", i+1))
-		log.Println(suppress.Renderln("  対象フォルダー:"), r.ExpandedDir())
-		log.Println(suppress.Renderln("  対象ファイル名:"), r.File)
-		log.Println(suppress.Renderln("  テキストファイルの文字コード:"), r.Encoding)
+		log.Println(caption.Sprintf("规则%d:", i+1))
+		log.Println(suppress.Renderln("  目标文件夹:"), r.ExpandedDir())
+		log.Println(suppress.Renderln("  目标文件名:"), r.File)
+		log.Println(suppress.Renderln("  文本文件字符编码:"), r.Encoding)
 		if r.textRE != nil {
-			log.Println(suppress.Renderln("  テキスト判定用の正規表現:"), r.Text)
+			log.Println(suppress.Renderln("  文本判断正则表达式:"), r.Text)
 		}
-		log.Println(suppress.Renderln("  挿入先レイヤー:"), r.Layer)
-		log.Println(suppress.Renderln("  modifier:"), bool2str(r.Modifier != "", "あり", "なし"))
-		log.Println(suppress.Renderln("  ユーザーデータ:"), r.UserData)
-		log.Println(suppress.Renderln("  パディング:"), r.Padding)
-		log.Println(suppress.Renderln("  EXOファイル:"), r.ExoFile)
-		log.Println(suppress.Renderln("  Luaファイル:"), r.LuaFile)
-		log.Println(suppress.Renderln("  Waveファイルの移動:"), r.FileMove.Readable())
+		log.Println(suppress.Renderln("  插入目标图层:"), r.Layer)
+		log.Println(suppress.Renderln("  modifier:"), bool2str(r.Modifier != "", "是", "否"))
+		log.Println(suppress.Renderln("  用户数据:"), r.UserData)
+		log.Println(suppress.Renderln("  填充:"), r.Padding)
+		log.Println(suppress.Renderln("  EXO文件:"), r.ExoFile)
+		log.Println(suppress.Renderln("  Lua文件:"), r.LuaFile)
+		log.Println(suppress.Renderln("  移动wav文件:"), r.FileMove.Readable())
 		if r.FileMove != "off" {
-			log.Println(suppress.Sprintf("    %s先:", r.FileMove.Readable()), r.ExpandedDestDir())
+			log.Println(suppress.Sprintf("    %s目标:", r.FileMove.Readable()), r.ExpandedDestDir())
 		}
-		log.Println(suppress.Renderln("  テキストファイルの削除:"), bool2str(r.DeleteText, "する", "しない"))
+		log.Println(suppress.Renderln("  删除文本文件:"), bool2str(r.DeleteText, "是", "否"))
 		if !r.ExistsDir() {
-			log.Println(warn.Renderln("  [警告] 対象フォルダー が見つからないため設定を無視します"))
+			log.Println(warn.Renderln("  [警告] 找不到目标文件夹，因此忽略设定"))
 		}
 	}
 	log.Println()
@@ -430,11 +430,11 @@ func tempSetting(tempDir string, projectDir string) (*setting, error) {
 func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settingFile string, recentChanged map[string]fileState, recentSent map[string]sentFileState, loop int) error {
 	exePath, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("exe ファイルのパスが取得できません: %w", err)
+		return fmt.Errorf("无法获取exe文件路径: %w", err)
 	}
 	tempDir := filepath.Join(filepath.Dir(exePath), "tmp")
 	if err = os.Mkdir(tempDir, 0777); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("tmp フォルダの作成に失敗しました: %w", err)
+		return fmt.Errorf("tmp 文件夹创建失败: %w", err)
 	}
 
 	projectPath := getProjectPath()
@@ -446,10 +446,10 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 	setting, err := loadSetting(settingFile, tempDir, projectDir)
 	if err != nil {
 		if !errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("設定の読み込みに失敗しました: %w", err)
+			return fmt.Errorf("设定加载失败: %w", err)
 		}
-		log.Println(warn.Renderln("設定ファイルが開けませんでした。"))
-		log.Println(suppress.Renderln(filepath.Base(settingFile), "を作成すると自動で読み込みます。"))
+		log.Println(warn.Renderln("无法打开配置文件。"))
+		log.Println(suppress.Renderln(filepath.Base(settingFile), "创建后会自动加载。"))
 		log.Println()
 		setting, _ = tempSetting(tempDir, projectDir)
 	} else {
@@ -462,7 +462,7 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 	L.PreloadModule("re", gluare.Loader)
 	err = L.DoString(`re = require("re")`)
 	if err != nil {
-		return fmt.Errorf("スクリプト環境の初期化中にエラーが発生しました: %w", err)
+		return fmt.Errorf("脚本环境初始化出错: %w", err)
 	}
 
 	L.SetGlobal("debug_print", L.NewFunction(luaDebugPrint))
@@ -479,31 +479,31 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 	L.SetGlobal("replaceenv", L.NewFunction(luaReplaceEnv(setting)))
 
 	if err := L.DoFile("_entrypoint.lua"); err != nil {
-		return fmt.Errorf("_entrypoint.lua の実行中にエラーが発生しました: %w", err)
+		return fmt.Errorf("运行 _entrypoint.lua 时出错: %w", err)
 	}
 
 	updateOnly := loop > 0
 	for _, a := range setting.Asas {
 		if a.Exists() {
 			if _, err := a.ConfirmAndRun(updateOnly); err != nil {
-				return fmt.Errorf("プログラムの起動に失敗しました: %w", err)
+				return fmt.Errorf("程序启动失败: %w", err)
 			}
 		}
 	}
 
-	log.Println(caption.Sprintf("監視を開始します:"))
+	log.Println(caption.Sprintf("开始监视:"))
 	watching := 0
 	for _, dir := range setting.Dirs() {
 		err = watcher.Add(dir)
 		if err != nil {
-			return fmt.Errorf("フォルダー %s が監視できません: %w", dir, err)
+			return fmt.Errorf("无法监视文件夹 %s : %w", dir, err)
 		}
 		log.Println("  " + dir)
 		watching++
 		defer watcher.Remove(dir)
 	}
 	if watching == 0 {
-		log.Println(warn.Renderln("  [警告] 監視対象のフォルダーがひとつもありません"))
+		log.Println(warn.Renderln("  [警告] 无可供监视的文件夹。"))
 	}
 	notify := make(chan map[string]struct{}, 10000)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -547,10 +547,10 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 			var needRetry bool
 			for wavPath, fState := range recentChanged {
 				if verbose {
-					log.Println(suppress.Renderln("送信ファイル候補検証:", wavPath))
+					log.Println(suppress.Renderln("传送文件候选校验:", wavPath))
 				}
 				if fState.Stay == maxStay {
-					log.Println(warn.Renderln("  以下のファイルは長時間準備が整わなかったので一旦諦めます"))
+					log.Println(warn.Renderln("  长时间未准备就绪，暂时放弃以下文件"))
 					log.Println("    ", wavPath)
 					delete(recentChanged, wavPath)
 					continue
@@ -563,7 +563,7 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 					// Whenever this issue is resolved, an Create/Write event will occur.
 					// So we ignore it for now.
 					if verbose {
-						log.Println(suppress.Renderln("  *.wav と *.txt が揃ってないので無視します"))
+						log.Println(suppress.Renderln("  *.wav 与 *.txt 不匹配，暂时忽略"))
 					}
 					delete(recentChanged, wavPath)
 					continue
@@ -575,7 +575,7 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 					// So we ignore it for now.
 					if math.Abs(s1Mod.Sub(s2Mod).Seconds()) > setting.Delta {
 						if verbose {
-							log.Println(suppress.Renderln("  *.wav と *.txt の更新日時の差が", setting.Delta, "秒以上なので無視します"))
+							log.Println(suppress.Renderln("  *.wav 与 *.txt 更新时间相差", setting.Delta, "秒以上，暂时忽略"))
 						}
 						delete(recentChanged, wavPath)
 						continue
@@ -584,8 +584,8 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 				hash, err := verifyAndCalcHash(wavPath, txtPath)
 				if err != nil {
 					if verbose {
-						log.Println(suppress.Renderln("  まだファイルの準備が整わないので保留にします"))
-						log.Println(suppress.Renderln("    理由:", err))
+						log.Println(suppress.Renderln("  文件尚未准备就绪，暂时搁置"))
+						log.Println(suppress.Renderln("    原因:", err))
 					}
 					fState.Stay++
 					recentChanged[wavPath] = fState
@@ -599,13 +599,13 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 				}
 				if st, found := recentSent[wavPath]; found && st.Hash == hash {
 					if verbose {
-						log.Println(suppress.Renderln("  つい最近送ったファイルなので、重複送信回避のために無視します"))
+						log.Println(suppress.Renderln("  此为最近发送的文件，为避免重复发送暂时忽略"))
 					}
 					delete(recentChanged, wavPath)
 					continue
 				}
 				if verbose {
-					log.Println(suppress.Renderln("このファイルはルール検索対象です"))
+					log.Println(suppress.Renderln("此文件为规则检索对象"))
 				}
 				files = append(files, file{wavPath, hash, s1Mod, fState.Retry})
 			}
@@ -614,7 +614,7 @@ func process(watcher *fsnotify.Watcher, settingWatcher *fsnotify.Watcher, settin
 			}
 			needRetry, err = processFiles(L, files, setting.Sort, recentChanged, recentSent)
 			if err != nil {
-				log.Println("ファイルの処理中にエラーが発生しました:", err)
+				log.Println("处理文件时出错:", err)
 			}
 			if needRetry {
 				d := 500 * time.Millisecond
@@ -643,7 +643,7 @@ func main() {
 
 	exePath, err := os.Executable()
 	if err != nil {
-		log.Fatalln("exe ファイルのパスが取得できません", err)
+		log.Fatalln("无法获取exe文件路径。", err)
 	}
 
 	settingFile := flag.Arg(0)
@@ -653,45 +653,45 @@ func main() {
 	if !filepath.IsAbs(settingFile) {
 		p, err := filepath.Abs(settingFile)
 		if err != nil {
-			log.Fatalln("filepath.Abs に失敗しました:", err)
+			log.Fatalln("filepath.Abs 失败:", err)
 		}
 		settingFile = p
 	}
 
 	if err := os.Chdir(filepath.Dir(exePath)); err != nil {
-		log.Fatalln("カレントディレクトリの変更に失敗しました:", err)
+		log.Fatalln("当前目录更改失败:", err)
 	}
 
 	settingWatcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatalln("fsnotify.NewWatcher に失敗しました:", err)
+		log.Fatalln("fsnotify.NewWatcher 失败:", err)
 	}
 	defer settingWatcher.Close()
 
 	err = settingWatcher.Add(filepath.Dir(settingFile))
 	if err != nil {
-		log.Fatalln("設定ファイルフォルダーの監視に失敗しました:", err)
+		log.Fatalln("配置文件夹监视失败:", err)
 	}
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatalln("fsnotify.NewWatcher に失敗しました:", err)
+		log.Fatalln("fsnotify.NewWatcher 失败:", err)
 	}
 	defer watcher.Close()
 
 	recentChanged := map[string]fileState{}
 	recentSent := map[string]sentFileState{}
 	for i := 0; ; i++ {
-		log.Println(caption.Renderln("かんしくん"), version)
+		log.Println(caption.Renderln("监视者"), version)
 		if verbose {
-			log.Println(warn.Renderln("冗長ログモードが有効"))
+			log.Println(warn.Renderln("启用冗余日志模式"))
 		}
-		log.Println(suppress.Renderln("  設定ファイル:"), settingFile)
+		log.Println(suppress.Renderln("  配置文件:"), settingFile)
 		log.Println()
 		err = process(watcher, settingWatcher, settingFile, recentChanged, recentSent, i)
 		if err != nil {
 			log.Println(err)
-			log.Println("3秒後にリトライします")
+			log.Println("3秒后重试")
 			time.Sleep(3 * time.Second)
 		}
 	}

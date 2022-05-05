@@ -218,7 +218,7 @@ func luaSendFile(L *lua.LState) int {
 		Ptr:  uintptr(unsafe.Pointer(&str[0])),
 	}
 	if _, err := sendMessage(windows.Handle(window), wmCopyData, uintptr(getConsoleWindow()), uintptr(unsafe.Pointer(cds))); err != nil {
-		L.RaiseError("ごちゃまぜドロップスの外部連携API呼び出しに失敗しました: %v", err)
+		L.RaiseError("随意拖放外部API调用失败: %v", err)
 	}
 	return 0
 }

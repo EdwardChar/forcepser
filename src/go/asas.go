@@ -129,11 +129,11 @@ func (a *asas) ConfirmAndRun(updateOnly bool) (bool, error) {
 	if r || updateOnly {
 		return false, nil
 	}
-	msg, err := windows.UTF16PtrFromString("実行中の " + filepath.Base(a.Exe) + " が見つかりませんでした。\n起動しますか？")
+	msg, err := windows.UTF16PtrFromString("找不到正在运行的" + filepath.Base(a.Exe) + "。\n确定要启动吗？")
 	if err != nil {
 		return false, err
 	}
-	title, err := windows.UTF16PtrFromString("かんしくん " + version)
+	title, err := windows.UTF16PtrFromString("监视者 " + version)
 	if err != nil {
 		return false, err
 	}
@@ -153,7 +153,7 @@ func (a *asas) ConfirmAndRun(updateOnly bool) (bool, error) {
 func (a *asas) Run() (bool, error) {
 	exePath, err := os.Executable()
 	if err != nil {
-		return false, fmt.Errorf("exe ファイルのパスが取得できません: %w", err)
+		return false, fmt.Errorf("无法获取exe文件路径: %w", err)
 	}
 	cmd := exec.Command(filepath.Join(filepath.Dir(exePath), "asas", "asas.exe"), a.Exe)
 	asasName, err := a.getASASName()
@@ -169,7 +169,7 @@ func (a *asas) Run() (bool, error) {
 	)
 	cmd.Dir = filepath.Dir(a.Exe)
 	if err = cmd.Start(); err != nil {
-		return false, fmt.Errorf("asas.exe の実行に失敗しました: %w", err)
+		return false, fmt.Errorf("asas.exe运行失败: %w", err)
 	}
 	go cmd.Wait()
 	return true, nil

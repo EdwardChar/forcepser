@@ -20,6 +20,8 @@ https://github.com/oov/forcepser/blob/main/CHANGELOG.md
 注意事項
 --------
 
+Dependency: asas
+
 かんしくん は無保証で提供されます。  
 かんしくん を使用したこと及び使用しなかったことによるいかなる損害について、開発者は責任を負いません。
 
