@@ -164,7 +164,7 @@ func newSetting(r io.Reader, tempDir string, projectDir string) (*setting, error
 
 		r.Dir = getString("dir", tr, "%TEMPDIR%")
 
-		r.Encoding = getString("encoding", tr, "sjis")
+		r.Encoding = getString("encoding", tr, "gbk")
 
 		r.Layer = getInt("layer", tr, 1)
 
@@ -256,7 +256,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
-	var u8, sjis, u16le, u16be *string
+	var u8, gbk, u16le, u16be *string
 
 	for i := range ss.Rule {
 		if verbose {
@@ -302,20 +302,20 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 					}
 					continue
 				}
-			case "sjis":
-				if sjis == nil {
+			case "gbk":
+				if gbk == nil {
 					b, err := shiftjis.NewDecoder().Bytes(textRaw)
 					if err != nil {
 						if verbose {
-							log.Println(suppress.Renderln("    Shift_JIS → UTF-8 字符编码转换失败"))
+							log.Println(suppress.Renderln("    gbk → UTF-8 字符编码转换失败"))
 							log.Println(suppress.Renderln("      ", err))
 						}
 						continue
 					}
 					t := string(b)
-					sjis = &t
+					gbk = &t
 				}
-				if !r.textRE.MatchString(*sjis) {
+				if !r.textRE.MatchString(*gbk) {
 					if verbose {
 						log.Println(suppress.Renderln("    文本内容与正则表达式不匹配"))
 					}
@@ -371,16 +371,16 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 				u8 = &t
 			}
 			return r, *u8, nil
-		case "sjis":
-			if sjis == nil {
+		case "gbk":
+			if gbk == nil {
 				b, err := shiftjis.NewDecoder().Bytes(textRaw)
 				if err != nil {
-					return nil, "", fmt.Errorf("cannot convert encoding to shift_jis: %w", err)
+					return nil, "", fmt.Errorf("cannot convert encoding to gbk: %w", err)
 				}
 				t := string(b)
-				sjis = &t
+				gbk = &t
 			}
-			return r, *sjis, nil
+			return r, *gbk, nil
 		case "utf16le":
 			if u16le == nil {
 				b, err := utf16le.NewDecoder().Bytes(textRaw)

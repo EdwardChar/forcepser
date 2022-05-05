@@ -106,7 +106,7 @@ local function genexo(proj, file, text, rule)
   table.insert(exo, (jp and "透明度" or "Clearness") .. "=0.0")
   table.insert(exo, (jp and "旋转" or "Rotation") .. "=0.00")
   table.insert(exo, "blend=0")
-  return tosjis(table.concat(exo, "\r\n")), length+padding
+  return togbk(table.concat(exo, "\r\n")), length+padding
 end
 
 local function parseexo(lines)
@@ -133,7 +133,7 @@ local function genexofromtemplate(exo, proj, file, text, rule)
   if f == nil then
     return nil
   end
-  local s = fromsjis(f:read("*all"))
+  local s = fromgbk(f:read("*all"))
   f:close()
   debug_print("  使用模板文件 " .. exo .. " ")
   local ai = getaudioinfo(file)
@@ -152,7 +152,7 @@ local function genexofromtemplate(exo, proj, file, text, rule)
     s = s:gsub("%%TEXT%%", text)
     s = s:gsub("%%EXOTEXT%%", toexostring(text))
     s = s:gsub("%%EXOJSON%%", toexostring('{"padding":'..padding..'}'))
-    return tosjis(s), length+padding
+    return togbk(s), length+padding
   else
     local ini = parseexo(s)
     local tplproj = {
@@ -198,7 +198,7 @@ local function genexofromtemplate(exo, proj, file, text, rule)
         table.insert(r, k .. "=" .. v)
       end
     end
-    return tosjis(table.concat(r, "\r\n")), length+padding
+    return togbk(table.concat(r, "\r\n")), length+padding
   end
 end
 

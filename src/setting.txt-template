@@ -113,7 +113,7 @@ deletetext = true
 # ガイノイドTALK や A.I.VOICE の場合にもこの設定が流用できます。
 # ※ 音声を出力するときは、ボイスプリセットタグをつけて `東北きりたん(v1)＞こんにちは` のように入力してください。
 #[[rule]]
-#encoding = 'sjis'
+#encoding = 'gbk'
 #file = 'ボイロ2_*.wav'
 #text = '''^東北きりたん\(v1\)＞'''
 #layer = 1
@@ -128,7 +128,7 @@ deletetext = true
 # テキストからルビタグを除去し、
 # AviUtl のプロジェクトファイルと同じ場所に *.wav を移動して、ファイル名を「201231_235959_きりたん_こんにちは.wav」に変更してレイヤー1に投げ込む
 #[[rule]]
-#encoding = 'sjis'
+#encoding = 'gbk'
 #file = 'きりたん_*.wav'
 #layer = 1
 #modifier = '''
@@ -141,7 +141,7 @@ deletetext = true
 # テキストからルビタグを除去し、
 # AviUtl のプロジェクトファイルと同じ場所に *.wav を移動して、ファイル名を「201231_235959_きりたん_こんにちは.wav」に変更してレイヤー1に投げ込む
 #[[rule]]
-#encoding = 'sjis'
+#encoding = 'gbk'
 #dir = '%MYDOC%\VoiceroidWaveFiles'
 #file = '*_東北きりたん_*.wav'
 #layer = 1
@@ -155,10 +155,10 @@ deletetext = true
 # かんしくんと同じ場所にある tmp フォルダーに「00_さとうささら_こんにちは.wav」のような名前のファイルが作成されたとき
 # テキストからルビタグを除去し、
 # AviUtl のプロジェクトファイルと同じ場所に *.wav を移動して、ファイル名を「201231_235959_ささら_こんにちは.wav」に変更した上でレイヤー1に投げ込む
-# ※予め CeVIO を連動起動を使わずに起動し、トークのエクスポートでテキストファイルも一緒に書き出し、更にその文字コードが Shift_JIS になるように設定してください
+# ※予め CeVIO を連動起動を使わずに起動し、トークのエクスポートでテキストファイルも一緒に書き出し、更にその文字コードが gbk になるように設定してください
 # CeVIO AI の場合にもこの設定が流用できます。
 #[[rule]]
-#encoding = 'sjis'
+#encoding = 'gbk'
 #file = '*_さとうささら_*.wav'
 #layer = 1
 #modifier = '''
@@ -171,7 +171,7 @@ deletetext = true
 # AviUtl のプロジェクトファイルと同じ場所に *.wav を移動して、ファイル名を「201231_235959_女性１_こんにちは.wav」に変更した上でレイヤー1に投げ込む
 # ※Bouyomichan-wav-and-txt.dll の設定で「ファイルの保存場所」をかんしくんと同じ場所にある tmp フォルダーに指定してください
 #[[rule]]
-#encoding = 'sjis'
+#encoding = 'gbk'
 #file = '*_女性１_*.wav'
 #layer = 1
 #modifier = '''
@@ -184,7 +184,7 @@ deletetext = true
 # ※このテンプレートはゆっくり調声くんのプロジェクトを AviUtl のプロジェクトと同じ場所に作成することを想定しています
 # 　ゆっくり調声くんのプロジェクトを別の場所に置く場合は、そのフォルダーを dir = 'C:\Your\Folder' のように指定してください
 #[[rule]]
-#encoding = 'sjis'
+#encoding = 'gbk'
 #dir = '%PROJECTDIR%'
 #file = '*_霊夢_*.wav'
 #layer = 1

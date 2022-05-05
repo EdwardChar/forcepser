@@ -8,10 +8,10 @@ endif()
 file(REMOVE_RECURSE "${local_dir}/${dir}")
 file(MAKE_DIRECTORY "${local_dir}/${dir}")
 
-if ("${charset}" STREQUAL "sjis")
+if ("${charset}" STREQUAL "gbk")
   find_program(UNZIP unzip REQUIRED CMAKE_FIND_ROOT_PATH_BOTH)
   execute_process(
-    COMMAND ${UNZIP} -O sjis ${ZIP_PATH}
+    COMMAND ${UNZIP} -O gbk ${ZIP_PATH}
     WORKING_DIRECTORY "${local_dir}/${dir}"
   )
 else()

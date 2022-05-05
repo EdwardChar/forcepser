@@ -333,19 +333,19 @@ func luaGetAudioInfo(L *lua.LState) int {
 	return 1
 }
 
-func luaFromSJIS(L *lua.LState) int {
+func luaFromgbk(L *lua.LState) int {
 	s, err := japanese.ShiftJIS.NewDecoder().String(L.ToString(1))
 	if err != nil {
-		L.RaiseError("无法从 Shift_JIS 转换为字符串: %v", err)
+		L.RaiseError("无法从 gbk 转换为字符串: %v", err)
 	}
 	L.Push(lua.LString(s))
 	return 1
 }
 
-func luaToSJIS(L *lua.LState) int {
+func luaTogbk(L *lua.LState) int {
 	s, err := japanese.ShiftJIS.NewEncoder().String(L.ToString(1))
 	if err != nil {
-		L.RaiseError("无法将字符串转换为 Shift_JIS: %v", err)
+		L.RaiseError("无法将字符串转换为 gbk: %v", err)
 	}
 	L.Push(lua.LString(s))
 	return 1

@@ -172,7 +172,7 @@
 - `[[asas]]` で asas 用の定義を記述できるようにし、かんしくん起動時に連動起動できる機構を追加
 - 設定ファイルの記述を簡略化するための変更
   - `[[rule]]` の `dir` のデフォルト値を `%TEMPDIR%` にした
-  - `[[rule]]` の `encoding` のデフォルト値を `sjis` にした
+  - `[[rule]]` の `encoding` のデフォルト値を `gbk` にした
 - `genexo.lua` で新しく追加された設定値にアクセスできるように `gen` に代わり `gen2` を使えるようにした
   - `gen` を使ったスクリプトも依然として動作しますが、`padding` のような新しい設定値へのアクセス手段がありません。
 
@@ -185,7 +185,7 @@ local P = {}
 -- 以前の layer と userdata は rule.layer, rule.userdata でアクセスでき、そのほか rule.padding などもあります
 function P.gen2(proj, file, text, rule)
   local length = 30
-  return tosjis("[exedit]\r\nwidth=1280\r\nheight=720\r\nrate=30\r\nscale=1\r\nlength=" .. length .. "..."), length
+  return togbk("[exedit]\r\nwidth=1280\r\nheight=720\r\nrate=30\r\nscale=1\r\nlength=" .. length .. "..."), length
 end
 return P
 ```
@@ -203,7 +203,7 @@ return P
 local P = {}
 function P.gen(proj, file, text, layer, userdata)
   local length = 30
-  return tosjis("[exedit]\r\nwidth=1280\r\nheight=720\r\nrate=30\r\nscale=1\r\nlength=" .. length .. "..."), length
+  return togbk("[exedit]\r\nwidth=1280\r\nheight=720\r\nrate=30\r\nscale=1\r\nlength=" .. length .. "..."), length
 end
 return P
 ```
