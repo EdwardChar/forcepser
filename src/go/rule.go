@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	toml "github.com/pelletier/go-toml"
-	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/encoding/simplifiedchinese"
 	"golang.org/x/text/encoding/unicode"
 )
 
@@ -239,7 +239,7 @@ func newSetting(r io.Reader, tempDir string, projectDir string) (*setting, error
 }
 
 var (
-	shiftjis = japanese.ShiftJIS
+	gbk = simplifiedchinese.GBK
 	utf16le  = unicode.UTF16(unicode.LittleEndian, unicode.UseBOM)
 	utf16be  = unicode.UTF16(unicode.BigEndian, unicode.UseBOM)
 )
@@ -304,10 +304,10 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 				}
 			case "gbk":
 				if gbk == nil {
-					b, err := shiftjis.NewDecoder().Bytes(textRaw)
+					b, err := gbk.NewDecoder().Bytes(textRaw)
 					if err != nil {
 						if verbose {
-							log.Println(suppress.Renderln("    gbk → UTF-8 字符编码转换失败"))
+							log.Println(suppress.Renderln("    GBK → UTF-8 字符编码转换失败"))
 							log.Println(suppress.Renderln("      ", err))
 						}
 						continue
@@ -373,7 +373,7 @@ func (ss *setting) Find(path string) (*rule, string, error) {
 			return r, *u8, nil
 		case "gbk":
 			if gbk == nil {
-				b, err := shiftjis.NewDecoder().Bytes(textRaw)
+				b, err := gbk.NewDecoder().Bytes(textRaw)
 				if err != nil {
 					return nil, "", fmt.Errorf("cannot convert encoding to gbk: %w", err)
 				}
